@@ -6,6 +6,7 @@
 // Implementation of Course ADT and functions for Player and PlayerNode types
 //
 // Parker Sexton
+//whats up
 
 #include "golf.h"
 #include <stdio.h>
@@ -14,7 +15,7 @@
 
 
 Course readCourse(const char * fn){
-
+	
 }
 
 
