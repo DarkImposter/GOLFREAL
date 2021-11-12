@@ -14,8 +14,16 @@
 
 
 
-Course readCourse(const char * fn){
-	
+Course readCourse(){
+	FILE* file = fopen("TorreyPines.txt","r");
+	char tor[10][150];
+	int i;
+	for(i=0;i<10;i++){
+	    fgets(tor[i],150,file);
+	    printf("%s",tor[i]);
+	}
+	fclose(file);
+
 }
 
 

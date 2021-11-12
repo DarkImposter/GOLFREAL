@@ -49,7 +49,7 @@ int countScores(const Player *p, int parScore);  // returns number of times play
 // for example, caller would set parScore to -1 to count the number of birdies on holes played so far
 
 
-Course readCourse(const char * filename);  // read course and score info from file
+Course readCourse(/*const char * filename*/);  // read course and score info from file
 const char * courseName(Course c);   // course name
 const int * courseHoles(Course c);   // array of pars for 18 holes
 const PlayerNode * coursePlayers(Course c);  // list of all players, alphabetical

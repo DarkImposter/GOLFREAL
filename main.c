@@ -19,7 +19,7 @@ void printStats(Course);
 // This main function has arguments that come from the command line,
 // which allows you to run using the same input file without
 // typing the file name over and over again.  See the spec document.
-int main(int argc, char **argv) {
+int main()/*int argc, char **argv) {
     setbuf(stdout,0);   // remove the need for flush
     const char * filename = "";
     if (argc == 2) filename = argv[1];  // file name passed on command line
@@ -176,4 +176,8 @@ void printStats(Course crs) {
         printf("%+6.2f", strokes - pars[i-1]);
     }
     printf("\n");
+}
+*/
+{
+    readCourse();
 }
