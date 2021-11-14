@@ -19,9 +19,9 @@ void printStats(Course);
 // This main function has arguments that come from the command line,
 // which allows you to run using the same input file without
 // typing the file name over and over again.  See the spec document.
-int main()/*int argc, char **argv) {
-    setbuf(stdout,0);   // remove the need for flush
-    const char * filename = "";
+int main(int argc, char **argv) {
+    setbuf(stdout,0);   // remove the need for fflush
+    char * filename = "";
     if (argc == 2) filename = argv[1];  // file name passed on command line
     else {
         filename = calloc(81, sizeof(char));
@@ -32,7 +32,7 @@ int main()/*int argc, char **argv) {
     // open the file and read the info
     Course crs = readCourse(filename);
     if (!crs) {
-        printf("ERROR: Course file %s cannot be opened.\n");
+        printf("ERROR: Course file %s cannot be opened.\n", filename);
         return EXIT_FAILURE;
     }
     printf("Welcome to today's golf tournament.\n");
@@ -55,29 +55,29 @@ int main()/*int argc, char **argv) {
         switch (command) {
             case 'q':
                 break;  // quit, nothing to do
-                case 'p':
-                    // print scores for all players
-                    printPlayerScores(coursePlayers(crs));
-                    break;
-                    case 'l':
-                        // print scores for leaders only
-                        scanf("%d", &numLeaders);
-                        printLeaderboard(courseLeaders(crs, numLeaders));
-                        break;
-                        case 'f':
-                            // find a particular player and print statistics
-                            scanf("%15s", player);
-                            p = findPlayer(player, crs);
-                            if (!p) printf("Player \"%s\" not found.\n", player);
-                            else printPlayerStats(p);
-                            break;
-                            case 's':
-                                // print stats for the entire round
-                                printStats(crs);
-                                break;
-                                default:
-                                    printf("Unknown command\n");
-                                    break;
+            case 'p':
+                // print scores for all players
+                printPlayerScores(coursePlayers(crs));
+                break;
+            case 'l':
+                // print scores for leaders only
+                scanf("%d", &numLeaders);
+                printLeaderboard(courseLeaders(crs, numLeaders));
+                break;
+            case 'f':
+                // find a particular player and print statistics
+                scanf("%15s", player);
+                p = findPlayer(player, crs);
+                if (!p) printf("Player \"%s\" not found.\n", player);
+                else printPlayerStats(p);
+                break;
+            case 's':
+                // print stats for the entire round
+                printStats(crs);
+                break;
+            default:
+                printf("Unknown command\n");
+                break;
         }
         scanf("%*c");  // remove the linefeed
     }
@@ -176,8 +176,4 @@ void printStats(Course crs) {
         printf("%+6.2f", strokes - pars[i-1]);
     }
     printf("\n");
-}
-*/
-{
-    readCourse();
 }
