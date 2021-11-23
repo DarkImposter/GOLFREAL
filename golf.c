@@ -46,36 +46,35 @@ Course readCourse(const char * filename){
 	        cnt++;
 	    }
 	}
-	/*
-	Player* play = malloc(sizeof(Player));
-	play = newPlayer("empty",c);
+
+
     int holeNum;
     lineNum++;
     char pdata[25];
     char* turn;
     char del[2] = ":";
-    i = 0;
     int loop = 1;
-
+    char nm[16];
 	while(loop){
 	    if(fscanf(file,"%s ",pdata) == EOF){
 	        loop = 0;
 	    }
 	    turn = strtok(pdata,del);
-        strcpy(play->name,turn);
+        strcpy(nm,turn);
+        Player* test = findPlayer(nm,c);
+        if(test == NULL){
+            addPlayer(newPlayer(nm,c),c);
+            test = findPlayer(nm,c);
+            printf("\n %s %s %d",c->headNode->next->player->name,*c->headNode->next->player->strokes,*c->headNode->next->player->strokeScore);
+        }
         turn = strtok(NULL,del);
         holeNum = atoi(turn);
         turn = strtok(NULL,del);
-        strcpy(*play->strokes,turn);
-        Player* test = findPlayer(play->name,c);
-        if(test == NULL){
-            addPlayer(play,c);
-            printf("\n %s %s %d",c->headNode->next->player->name,*c->headNode->next->player->strokes,*c->headNode->next->player->strokeScore);
-        }
-        scoreHole(play,holeNum,*play->strokes);
+        strcpy(*test->strokes,turn);
+        scoreHole(test,holeNum,*test->strokes);
 	}
 
-    */
+
 
 	fclose(file);
 
@@ -93,6 +92,7 @@ Player * newPlayer(const char *name, Course course){
     thisPlayer->strokeScore[17] = 0;
     for(int i = 0;i<17;i++){
         thisPlayer->strokes[i] = malloc(sizeof(char));
+        thisPlayer->strokes[i] = 0;
     }
     addPlayer(thisPlayer,course);
 
@@ -209,10 +209,9 @@ void addPlayer(Player* p, Course c) {
     PlayerNode* newPlayer = NULL;
     PlayerNode temp;
     temp.next = thisCourse->headNode;
-    newPlayer = (PlayerNode*)malloc(sizeof(PlayerNode));
+    newPlayer = malloc(sizeof(PlayerNode));
     newPlayer->player = p;
     newPlayer->next = NULL;
-    int alpha = 0;
     if (thisCourse->headNode == NULL) {
         thisCourse->headNode = newPlayer;
     }
@@ -220,17 +219,18 @@ void addPlayer(Player* p, Course c) {
         PlayerNode* currentnode = thisCourse->headNode;
         PlayerNode* prevNode = &temp;
         while(currentnode != NULL){
-            alpha = strcmp((currentnode->player->name), (newPlayer->player->name));
-            if ((alpha > 0))
+            if ((strcmp((currentnode->player->name), (newPlayer->player->name)) != 0))
             {
                 prevNode->next = newPlayer;
                 newPlayer->next = currentnode;
                 thisCourse->headNode = temp.next;
                 return;
             }
-            else if (alpha == 0) {break;}
-            prevNode = currentnode;
-            currentnode = currentnode->next;
+            else {
+                prevNode = currentnode;
+                currentnode = currentnode->next;
+            }
+
         }
         prevNode->next = newPlayer;
     }
