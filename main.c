@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     }
     printf("Welcome to today's golf tournament.\n");
     printf("Course: %s\n", courseName(crs));
-    printf("Number of players: %d\n\n", numPlayers(crs));
+    printf("Number of players: %d\n\n",numPlayers(crs));
 
     // This is the command prompt loop.  User enters a command after each prompt.
     // Continue until command is quit (q).

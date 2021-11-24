@@ -6,12 +6,15 @@
 // Implementation of Course ADT and functions for Player and PlayerNode types
 //
 // Parker Sexton
+// 11/24/21
+
 //whats up
 
 #include "golf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 struct golfCourse {
     char name[41];
@@ -20,110 +23,145 @@ struct golfCourse {
 };
 
 
-Course readCourse(const char * filename){
+Course readCourse(const char* filename) {
+    FILE* file = fopen(filename, "r");
     Course c;
-	FILE* file = fopen(filename,"r");
-	if(! file){
-	    return NULL;
-	}
-	char tor[10][100];
-	int i;
-	int lineNum = 0;
-    c = malloc(sizeof(struct golfCourse));
-	fgets(tor[lineNum],60,file);
-	strcpy(c->name,tor[lineNum]);
-	c->name[strlen(c->name)-1] = '\0';
-	//printf("%s",c->name);
-	lineNum++;
-	//printf("%s",c->name);
+    char tor[15][150];
+    int count = 0;
+    int lineNum = 0;
+    c = malloc(sizeof(struct golfCourse));//For each line
 
-	fgets(tor[lineNum],36,file);
-    int cnt = 0;
-	for(i=0;i<36;i++){
-	    if((tor[lineNum][i] != ' ') && tor[lineNum][i] != '\0' ){
-	        c->holes[cnt] = atoi(&tor[lineNum][i]);
-	        //printf("%d ",c->holes[cnt]);
-	        cnt++;
-	    }
-	}
-
-
-    int holeNum;
+    fgets(tor[lineNum], 100, file); //Get the name of the course
+    strcpy(c->name, tor[0]);
+    c->name[strlen(c->name)-1] = '\0';
     lineNum++;
-    char pdata[25];
-    char* turn;
-    char del[2] = ":";
-    int loop = 1;
-    char nm[16];
-	while(loop){
-	    if(fscanf(file,"%s ",pdata) == EOF){
-	        loop = 0;
-	    }
-	    turn = strtok(pdata,del);
-        strcpy(nm,turn);
-        Player* test = findPlayer(nm,c);
-        if(test == NULL){
-            addPlayer(newPlayer(nm,c),c);
-            test = findPlayer(nm,c);
-            printf("\n %s %s %d",c->headNode->next->player->name,*c->headNode->next->player->strokes,*c->headNode->next->player->strokeScore);
+    fgets(tor[lineNum], 100, file); //Get the name of the course
+
+    count = 0;
+    for (int i = 0; i < (18 * 2); i++) {
+        if ((tor[1][i] != ' ') && (tor[1][i] != '\0')) {
+            c->holes[count] = atoi(&tor[1][i]);	//Parse the list of characters in the
+            count++;												//strings of pars to list of ints
         }
-        turn = strtok(NULL,del);
-        holeNum = atoi(turn);
-        turn = strtok(NULL,del);
-        strcpy(*test->strokes,turn);
-        scoreHole(test,holeNum,*test->strokes);
-	}
+    }
+    char turnInfo[25];
+    char lastTurn[25];
+    int doLoop = 1;
+    while (doLoop) {
+        if(fscanf(file, "%s ", turnInfo) == EOF){
+            return c;
+        }
+        if (strcmp(lastTurn, turnInfo) != 0) {
+            char* turnData;
+            turnData = malloc(20 * sizeof(char));
+            int holeNumber;
+            char delim[2] = ":";
+            turnData = strtok(turnInfo, delim);
+            Player* playerExists = findPlayer(turnData, c);
+            if (playerExists == NULL) {
+                addPlayer(newPlayer(turnData, c), c);
+                playerExists = findPlayer(turnData, c);
+            }
+            turnData = strtok(NULL, delim);
+            holeNumber = atoi(turnData);
+            turnData = strtok(NULL," ");
+            scoreHole(playerExists, holeNumber, turnData);
+            strcpy(lastTurn, turnInfo);
 
+        }
+        else {
+            doLoop = 0;
+        }
+    }
 
-
-	fclose(file);
-
-
+    fclose(file);
     return c;
 }
 
-
 Player * newPlayer(const char *name, Course course){
-    Player* thisPlayer;
-    thisPlayer = malloc(sizeof(Player));
-    strcpy(thisPlayer->name,name);
-    thisPlayer->course = course;
-    thisPlayer->parScore[17] = 0;
-    thisPlayer->strokeScore[17] = 0;
+    Player* this = malloc(sizeof(Player));
+    strcpy(this->name,name);//store
+    this->course = course;
+    this->parScore[17] = 0;
+    this->strokeScore[17] = 0;
     for(int i = 0;i<17;i++){
-        thisPlayer->strokes[i] = malloc(sizeof(char));
-        thisPlayer->strokes[i] = 0;
+        this->strokes[i] = malloc(sizeof(char));
+        this->strokes[i] = 0;
     }
-    addPlayer(thisPlayer,course);
-
-
-
-    return thisPlayer;
+    addPlayer(this,course);
+    return this;
 }
 
 
 int scoreHole(Player* p, int hole, const char* strokes) {
+    if(strokes == NULL){
+        return 0;
+    }
     const char* ptr = strokes;
-    p->strokes[hole - 1] = malloc(sizeof(char) * 18);
+    p->strokes[hole - 1] = malloc(sizeof(char)*18);
     p->strokeScore[hole - 1] = strlen(strokes);
     strcpy(p->strokes[hole-1], ptr);
     p->parScore[hole-1] = (p->strokeScore[hole-1]) - (p->course->holes[hole-1]);
     return p->parScore[hole-1];
 }
 int totalStrokeScore(const Player *p){
-    return 0;
+    int score = 0;
+    int i;
+    if(findPlayer(p->name,p->course)){
+        for(i=0;i<18;i++){
+            score += p->strokeScore[i];
+        }
+    }
+    return score;
 }  // total number of strokes on all holes played
 int totalParScore(const Player *p){
-    return 0;
+    int score = 0;
+    int i;
+
+    for(i=0;i<18;i++){
+        if(p->strokeScore[i] == 0){
+            return score;
+        }
+        score += (p->strokeScore[i]) - (p->course->holes[i]);
+
+    }
+
+    return score;
 }     // total score relative to par (e.g., 2 means two-over-par) on all holes played
 int greensInReg(const Player *p){
-    return 0;
+    int greens = 0;
+    int i;
+    int l;
+    for(i=0;i<18;i++){
+        for(l=0;l< p->course->holes[i] -2; l++){
+            if(p->strokes[i][l] == 'g' || p->strokes[i][l] == 'h'){
+                greens++;
+            }
+        }
+    }
+    return greens-1;
 }       // number of greens reached in (par - 2) strokes, for all holes played
 void fairwaysHit(const Player *p, int *hit, int *holes){
+    int i;
+    for(i=0;i<18;i++){
+        if(p->course->holes[i] > 3){
+            (*holes)++;
+            if(p->strokes[i][0] == 'f'){
+                (*hit)++;
+            }
+        }
 
+    }
 }    // fairways hit (only for par-4 and par-5 holes), for all holes played
 int countScores(const Player *p, int parScore){
-    return 0;
+    int score = 0;
+    int i;
+    for(i=0;i<18;i++){
+        if(p->parScore[i] == parScore){
+            score++;
+        }
+    }
+    return score;
 } // returns number of times player achieved a certain par-score on any hole
 // for example, caller would set parScore to -1 to count the number of birdies on holes played so far
 
@@ -139,6 +177,8 @@ const PlayerNode * coursePlayers(Course c){
     PlayerNode* thisNode;
     thisNode = malloc(sizeof(PlayerNode));
     thisNode = c->headNode;
+    //int num = numPlayers(c);
+
     return thisNode;
 }  // list of all players, alphabetical
 PlayerNode * courseLeaders(Course c, int n){
@@ -148,52 +188,46 @@ PlayerNode * courseLeaders(Course c, int n){
 
     return thisNode;
 }  // return top n players plus ties
-int numPlayers(Course c){
-    int num = 0;
-    PlayerNode* p = c->headNode;
-    while(p){
-        num++;
-        p = p->next;
+
+
+int numPlayers(Course c) {
+    PlayerNode* thisNode = malloc(sizeof(struct golfPlayerNode));
+    thisNode->next = c->headNode;//Point to head
+    thisNode->player = NULL;
+    int playerCount = 0;
+    if(thisNode->next == NULL){
+        return 0;
     }
 
-    return num;
-}  // number of players
-/*
-Player * findPlayer(const char * name, Course c){
-    Player* thisPlayer = malloc(sizeof(Player));
-    thisPlayer = NULL;
-    //int i;
-    PlayerNode* currentPlayer = c->headNode;
-    if(c->headNode->next != NULL){ // if there is at least 1 player
-        while(currentPlayer != NULL){
-            if(strcmp(currentPlayer->next->player->name, name) == 0){
-                thisPlayer = currentPlayer->next->player;
-
-            }
-                currentPlayer = currentPlayer->next;
-            }
+    {
+        while (thisNode != NULL) {//run while loop
+            thisNode = thisNode->next;
+            playerCount++;
         }
+    }
 
-    return thisPlayer;
-}  // find and return a specific player
 
-*/
+    return playerCount-1;
+}
+
 Player* findPlayer(const char * name, Course c) {
-    Course thisCourse = c;
-    char checkName[10];
-    strcpy(checkName, name);
-    Player* returnValue = NULL;
-    PlayerNode* currentNode = thisCourse->headNode;
-    if (numPlayers(thisCourse) >= 0) {
-        if ((strcmp(currentNode->player->name, checkName)) == 0)
-        {
-            returnValue = thisCourse->headNode->player;
+    Player* returnValue = malloc(sizeof(Player));
+    returnValue = NULL;
+    if(c->headNode == NULL){
+        return returnValue;
+    }
+    PlayerNode* currentNode = malloc(sizeof(PlayerNode));
+    currentNode = c->headNode;
+    if (numPlayers(c) >= 0) { // if one player exists
+        if ((strcmp(currentNode->player->name, name)) == 0){
+            returnValue = c->headNode->player; //return that player if name match
+            return returnValue;
         }
 
         while (currentNode != NULL) {
-            if (strcmp(currentNode->player->name, checkName) == 0) {
+            if (strcmp(currentNode->player->name, name) == 0) {
                 returnValue = currentNode->player;
-                break;
+                return returnValue;
             }
             else {
                 currentNode = currentNode->next;
@@ -207,8 +241,8 @@ Player* findPlayer(const char * name, Course c) {
 void addPlayer(Player* p, Course c) {
     Course thisCourse = c;
     PlayerNode* newPlayer = NULL;
-    PlayerNode temp;
-    temp.next = thisCourse->headNode;
+    PlayerNode* temp = malloc(sizeof(PlayerNode));
+    temp->next = thisCourse->headNode;
     newPlayer = malloc(sizeof(PlayerNode));
     newPlayer->player = p;
     newPlayer->next = NULL;
@@ -217,32 +251,71 @@ void addPlayer(Player* p, Course c) {
     }
     else {
         PlayerNode* currentnode = thisCourse->headNode;
-        PlayerNode* prevNode = &temp;
+        PlayerNode* prevNode = temp;
         while(currentnode != NULL){
-            if ((strcmp((currentnode->player->name), (newPlayer->player->name)) != 0))
+            if ((strcmp((currentnode->player->name), (newPlayer->player->name)) > 0))
             {
                 prevNode->next = newPlayer;
                 newPlayer->next = currentnode;
-                thisCourse->headNode = temp.next;
+                thisCourse->headNode = temp->next;
                 return;
             }
             else {
-                prevNode = currentnode;
-                currentnode = currentnode->next;
+                if(strcmp((currentnode->player->name), (newPlayer->player->name)) == 0){
+                    return;
+                }
             }
+            prevNode = currentnode;
+            currentnode = currentnode->next;
 
         }
         prevNode->next = newPlayer;
     }
 }
 double avgTotalScore(Course c){
-    return 0;
+    double avg = 0;
+    int players = numPlayers(c);
+    PlayerNode* p = malloc(sizeof(PlayerNode));
+    p = c->headNode;
+    if(c->headNode->next){
+        while(p->next){
+            avg += totalStrokeScore(p->player);
+            p = p->next;
+        }
+    }
+    avg += totalStrokeScore(p->player);
+    avg /= players;
+    return avg;
 }   // return average stroke score for all players in list
 double avgParScore(Course c){
-    return 0;
+    PlayerNode* p = malloc(sizeof(PlayerNode));
+    double avg = 0;
+    int players = numPlayers(c);
+    p = c->headNode;
+    if(c->headNode->next){
+        while(p->next){
+            avg += totalParScore(p->player);
+            p = p->next;
+        }
+    }
+    avg += totalParScore(p->player);
+    avg /= players;
+    return avg;
 }     // return average par score for all players in list
 double avgHoleScore(Course c, int hole){
+    PlayerNode* p = malloc(sizeof(PlayerNode));
+    double avg = 0;
+    int players = numPlayers(c);
+    p = c->headNode;
+    if(c->headNode->next){
+        while(p->next){
+            avg += p->player->strokeScore[hole-1];
+            p = p->next;
+        }
+    }
+    avg += p->player->strokeScore[hole-1];
+    avg /= players;
+    return avg;
     return 0;
 }    // return average stroke score for a particular hole
-
 
